@@ -1,0 +1,35 @@
+.Scene {
+  --rows: 0;
+  --cols: 0;
+
+  @apply grid flex-1;
+
+  grid-template-rows: repeat(var(--rows), 1fr);
+  grid-template-columns: repeat(var(--cols), 1fr);
+}
+
+.Block {
+  @apply flex-1;
+
+  border: 0.5px solid white;
+}
+
+.Target {
+
+}
+
+.Visited {
+
+}
+
+.Road {
+
+}
+
+.Wall {
+
+}
+
+.Root {
+
+}

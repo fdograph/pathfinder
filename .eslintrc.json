@@ -6,8 +6,9 @@
         "jest": true
     },
     "extends": [
-        "plugin:react/recommended",
         "standard",
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended",
         "plugin:prettier/recommended"
     ],
     "parser": "@typescript-eslint/parser",

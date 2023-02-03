@@ -1,0 +1,7 @@
+.Pathfinder {
+  @apply flex flex-1 flex-col
+}
+
+.SceneContainer {
+  @apply flex flex-1 flex-col
+}

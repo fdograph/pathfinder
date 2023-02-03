@@ -1,0 +1,3 @@
+.app {
+  @apply flex-1 flex flex-col bg-neutral-900;
+}
