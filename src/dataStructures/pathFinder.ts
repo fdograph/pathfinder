@@ -77,24 +77,70 @@ export const buildPathArray = (
   return list;
 };
 
-export const dijkstraSearchGenerator = function* (
+const getDistance = (a: Node, b: Node): number => {
+  const yDiff = Math.abs(a.row - b.row);
+  const xDiff = Math.abs(a.col - b.col);
+
+  return Math.sqrt(Math.pow(yDiff, 2) + Math.pow(xDiff, 2));
+};
+
+export type HeuristicFn = (nodes: Node[], target: Node, root: Node) => Node;
+
+export const aStarHeuristic: HeuristicFn = (
+  nodes: Node[],
+  target: Node
+): Node => {
+  let leastDistance = Infinity;
+  let chosen = nodes[0];
+
+  for (const node of nodes) {
+    const nodeDistance = getDistance(node, target);
+
+    if (nodeDistance < leastDistance) {
+      leastDistance = nodeDistance;
+      chosen = node;
+    }
+  }
+
+  return chosen;
+};
+
+export const dijkstraHeuristic: HeuristicFn = (nodes: Node[]): Node => {
+  return [...nodes].shift()!;
+};
+
+export type AlgoType = 'dijkstra' | 'astar';
+
+export const getHeuristic = (type: AlgoType): HeuristicFn => {
+  switch (type) {
+    case 'astar':
+      return aStarHeuristic;
+    case 'dijkstra':
+    default:
+      return dijkstraHeuristic;
+  }
+};
+
+export interface PathFinderSolverRound {
+  node: Node;
+  path: Node[];
+  found: boolean;
+}
+export const pathFinderSearchGenerator = function* (
+  type: AlgoType,
   root: Node,
   target: Node,
-  grid: GraphGrid
-): Generator<
-  {
-    node: Node;
-    path: Node[];
-    found: boolean;
-  },
-  void
-> {
+  grid: GraphGrid,
+  walls: NodeKey[] = []
+): Generator<PathFinderSolverRound, void> {
   const visited = new Set<NodeKey>();
+  const invalid = new Set<NodeKey>(walls);
   const family = new Map<NodeKey, NodeKey>();
+  const heuristic = getHeuristic(type);
   let queue: Node[] = [root];
 
   while (queue.length) {
-    const node = queue.shift()!;
+    const node = heuristic(queue, target, root);
     const nodeKey = getNodeKey(node);
 
     // already saw this node
@@ -110,7 +156,9 @@ export const dijkstraSearchGenerator = function* (
 
     const neighbors = getNeighbors(node, grid).filter(
       neighbor =>
-        !visited.has(getNodeKey(neighbor)) && !family.has(getNodeKey(neighbor))
+        !visited.has(getNodeKey(neighbor)) &&
+        !family.has(getNodeKey(neighbor)) &&
+        !invalid.has(getNodeKey(neighbor))
     );
 
     neighbors.forEach(neighbor => {
@@ -118,18 +166,39 @@ export const dijkstraSearchGenerator = function* (
     });
 
     visited.add(nodeKey);
-    queue = [...queue, ...neighbors];
+    queue = [...queue.filter(n => !hasEqualCoords(n, node)), ...neighbors];
 
     yield { node, path: [], found: false };
   }
 };
 
-export const dijkstraSearch = (root: Node, target: Node, grid: GraphGrid) => {
-  for (const { path, found } of dijkstraSearchGenerator(root, target, grid)) {
-    if (found) {
-      return path;
-    }
-  }
+export const aStarSearch = (
+  root: Node,
+  target: Node,
+  grid: GraphGrid,
+  walls: NodeKey[]
+) => pathFinderSearchGenerator('astar', root, target, grid, walls);
 
-  return [];
+export const dijkstraSearch = (
+  root: Node,
+  target: Node,
+  grid: GraphGrid,
+  walls: NodeKey[]
+) => pathFinderSearchGenerator('dijkstra', root, target, grid, walls);
+
+export const getPathFinderSolver = (
+  type: AlgoType
+): ((
+  root: Node,
+  target: Node,
+  grid: GraphGrid,
+  walls: NodeKey[]
+) => Generator<{ node: Node; path: Node[]; found: boolean }, void>) => {
+  switch (type) {
+    case 'astar':
+      return aStarSearch;
+    case 'dijkstra':
+    default:
+      return dijkstraSearch;
+  }
 };

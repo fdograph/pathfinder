@@ -14,22 +14,23 @@
   border: 0.5px solid white;
 }
 
-.Target {
-
-}
-
 .Visited {
-
-}
-
-.Road {
-
+  background: green;
 }
 
 .Wall {
-
+  background: darkgrey;
 }
 
 .Root {
-
+  background: blue;
 }
+
+.Target {
+  background: red;
+}
+
+.Path {
+  background: yellow;
+}
+

@@ -1,17 +1,17 @@
 import React, { useCallback, useContext, useState } from 'react';
 import {
+  AlgoType,
   buildGraphGrid,
-  dijkstraSearchGenerator,
+  getPathFinderSolver,
   GraphGrid,
   Node,
+  NodeKey,
 } from '../dataStructures/pathFinder';
 import { useOnResize } from './hooks';
 
 const notImplemented = (...n: any) => {
   throw new Error('No PathFinderContextProvider found');
 };
-
-export type AlgoType = 'dijkstra';
 
 export interface PathFinderContextProps {
   selectedAlgo: AlgoType;
@@ -22,7 +22,8 @@ export interface PathFinderContextProps {
   setGraphSize: (rows: number, cols: number) => void;
   getSolver: (
     root: Node,
-    target: Node
+    target: Node,
+    walls: NodeKey[]
   ) => Generator<
     {
       node: Node;
@@ -32,20 +33,6 @@ export interface PathFinderContextProps {
     void
   >;
 }
-
-const getPathFinderSolver = (
-  type: AlgoType
-): ((
-  root: Node,
-  target: Node,
-  grid: GraphGrid
-) => Generator<{ node: Node; path: Node[]; found: boolean }, void>) => {
-  switch (type) {
-    case 'dijkstra':
-    default:
-      return dijkstraSearchGenerator;
-  }
-};
 
 export const PathFinderContext = React.createContext<PathFinderContextProps>({
   selectedAlgo: 'dijkstra',
@@ -59,7 +46,7 @@ export const PathFinderContext = React.createContext<PathFinderContextProps>({
 export const PathFinderContextProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
-  const [selectedAlgo, setSelectedAlgo] = useState<AlgoType>('dijkstra');
+  const [selectedAlgo, setSelectedAlgo] = useState<AlgoType>('astar');
   const [size, setSize] = useState({ cols: 0, rows: 0 });
   const [graph, setGraph] = useState<GraphGrid>([]);
   const setGraphSize = useCallback((rows: number, cols: number) => {
@@ -67,10 +54,10 @@ export const PathFinderContextProvider: React.FC<React.PropsWithChildren> = ({
     setGraph(buildGraphGrid(rows, cols));
   }, []);
   const getSolver = useCallback(
-    (root: Node, target: Node) => {
+    (root: Node, target: Node, walls: NodeKey[]) => {
       const solverFn = getPathFinderSolver(selectedAlgo);
 
-      return solverFn(root, target, graph);
+      return solverFn(root, target, graph, walls);
     },
     [graph, selectedAlgo]
   );
@@ -95,7 +82,7 @@ export const usePathFinderContext = () => useContext(PathFinderContext);
 
 export const useResponsivePathFinder = (
   ref: React.RefObject<HTMLElement>,
-  nodeSize: number = 40
+  nodeSize: number = 20
 ) => {
   const context = usePathFinderContext();
   const resetGraph = useCallback(() => {
@@ -111,5 +98,5 @@ export const useResponsivePathFinder = (
 
   useOnResize(resetGraph);
 
-  return context;
+  return { ...context, resetGraph };
 };
