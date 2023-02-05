@@ -59,8 +59,6 @@ describe('functionalPathFinder', () => {
 
       if (found) {
         expect(path).toHaveLength(5);
-      } else {
-        expect(path).toHaveLength(0);
       }
     }
   });

@@ -1,17 +1,35 @@
 import React from 'react';
-import { usePathFinderContext } from '../../utilities/PathFinderContext';
 
 import Styles from './Header.module.css';
+import { usePathFinderContext } from '../../utilities/PathFinderContext';
+import { AlgoType } from '../../dataStructures/pathFinder';
 
-export const Header: React.FC = () => {
+export interface HeaderProps {
+  solve: () => Promise<boolean>;
+  stop: () => void;
+  reset: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ solve, stop, reset }) => {
+  const pathFinder = usePathFinderContext();
+
   return (
     <header className={Styles.header}>
       <div>
-        <select>
-          <option>Dijkstra</option>
+        <select
+          defaultValue={pathFinder.selectedAlgo}
+          onChange={({ currentTarget: { value } }) => {
+            stop();
+            reset();
+            pathFinder.setSelectedAlgo(value as AlgoType);
+          }}
+        >
+          <option value="dijkstra">Dijkstra</option>
+          <option value="astar">A*</option>
         </select>
-        <button>play</button>
-        <button>stop</button>
+        <button onClick={solve}>solve</button>
+        <button onClick={stop}>stop</button>
+        <button onClick={reset}>reset</button>
       </div>
     </header>
   );

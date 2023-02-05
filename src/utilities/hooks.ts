@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { getNodeKey, Node, NodeKey } from '../dataStructures/pathFinder';
 import { PathFinderContextProps } from './PathFinderContext';
 
@@ -55,6 +61,31 @@ const setHandBreak = (v: boolean) => {
 
 const checkHandBreak = () => HAND_BREAK;
 
+export const useWalls = () => {
+  const [wallsSet, setWallsSet] = useState<Set<NodeKey>>(new Set());
+  const walls = useMemo(() => [...wallsSet], [wallsSet]);
+  const addWall = useCallback(
+    (key: NodeKey) => {
+      const w = new Set([...walls, key]);
+      setWallsSet(w);
+    },
+    [walls]
+  );
+  const removeWall = useCallback(
+    (key: NodeKey) => {
+      const w = new Set(walls);
+
+      w.delete(key);
+      setWallsSet(w);
+    },
+    [walls]
+  );
+
+  const isWall = useCallback((key: NodeKey) => wallsSet.has(key), [wallsSet]);
+
+  return { walls, addWall, removeWall, isWall };
+};
+
 export const usePathFinderSolver = (
   pathFinder: PathFinderContextProps,
   root?: Node,
@@ -71,11 +102,6 @@ export const usePathFinderSolver = (
       setHandBreak(true);
     }
   }, [isRunning]);
-  const setSolved = useCallback((path: Node[]) => {
-    setPath(path.map(getNodeKey));
-    setIsSolved(true);
-    setIsRunning(false);
-  }, []);
   const setUnsolved = useCallback(() => {
     setPath([]);
     setIsRunning(false);
@@ -89,14 +115,13 @@ export const usePathFinderSolver = (
   const solve = useCallback(async () => {
     if (root === undefined || target === undefined) {
       console.log('root or target is undefined');
-      return;
+      return false;
     }
 
     console.log('Solving, ', {
       pathFinder,
       reset,
       root,
-      setSolved,
       setUnsolved,
       target,
       walls,
@@ -117,14 +142,19 @@ export const usePathFinderSolver = (
       updatedVisited.add(getNodeKey(node));
       setVisited([...updatedVisited]);
 
+      setPath(path.map(getNodeKey));
+
       if (found) {
-        setSolved(path);
-        return;
+        setIsSolved(true);
+        setIsRunning(false);
+
+        return true;
       }
     }
 
     setUnsolved();
-  }, [pathFinder, reset, root, setSolved, setUnsolved, target, walls]);
+    return false;
+  }, [pathFinder, reset, root, setUnsolved, target, walls]);
 
   return {
     path,

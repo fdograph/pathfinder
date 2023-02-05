@@ -84,20 +84,29 @@ const getDistance = (a: Node, b: Node): number => {
   return Math.sqrt(Math.pow(yDiff, 2) + Math.pow(xDiff, 2));
 };
 
-export type HeuristicFn = (nodes: Node[], target: Node, root: Node) => Node;
+export type HeuristicFn = (
+  nodes: Node[],
+  target: Node,
+  root: Node,
+  family: Map<NodeKey, NodeKey>
+) => Node;
 
 export const aStarHeuristic: HeuristicFn = (
   nodes: Node[],
-  target: Node
+  target: Node,
+  root: Node,
+  family: Map<NodeKey, NodeKey>
 ): Node => {
-  let leastDistance = Infinity;
+  let leastFactor = Infinity;
   let chosen = nodes[0];
 
   for (const node of nodes) {
-    const nodeDistance = getDistance(node, target);
+    const distance = getDistance(node, target);
+    const pathLength = buildPathArray(node, family).length;
+    const nodeFactor = Math.log(distance * pathLength);
 
-    if (nodeDistance < leastDistance) {
-      leastDistance = nodeDistance;
+    if (nodeFactor < leastFactor) {
+      leastFactor = nodeFactor;
       chosen = node;
     }
   }
@@ -140,7 +149,7 @@ export const pathFinderSearchGenerator = function* (
   let queue: Node[] = [root];
 
   while (queue.length) {
-    const node = heuristic(queue, target, root);
+    const node = heuristic(queue, target, root, family);
     const nodeKey = getNodeKey(node);
 
     // already saw this node
@@ -157,8 +166,8 @@ export const pathFinderSearchGenerator = function* (
     const neighbors = getNeighbors(node, grid).filter(
       neighbor =>
         !visited.has(getNodeKey(neighbor)) &&
-        !family.has(getNodeKey(neighbor)) &&
-        !invalid.has(getNodeKey(neighbor))
+        !invalid.has(getNodeKey(neighbor)) &&
+        !family.has(getNodeKey(neighbor))
     );
 
     neighbors.forEach(neighbor => {
@@ -168,7 +177,7 @@ export const pathFinderSearchGenerator = function* (
     visited.add(nodeKey);
     queue = [...queue.filter(n => !hasEqualCoords(n, node)), ...neighbors];
 
-    yield { node, path: [], found: false };
+    yield { node, path: buildPathArray(node, family), found: false };
   }
 };
 

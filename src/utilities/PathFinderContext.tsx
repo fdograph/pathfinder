@@ -82,7 +82,7 @@ export const usePathFinderContext = () => useContext(PathFinderContext);
 
 export const useResponsivePathFinder = (
   ref: React.RefObject<HTMLElement>,
-  nodeSize: number = 20
+  nodeSize: number = 30
 ) => {
   const context = usePathFinderContext();
   const resetGraph = useCallback(() => {

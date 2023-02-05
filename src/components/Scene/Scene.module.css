@@ -22,6 +22,10 @@
   background: darkgrey;
 }
 
+.Path {
+  background: yellow;
+}
+
 .Root {
   background: blue;
 }
@@ -30,7 +34,5 @@
   background: red;
 }
 
-.Path {
-  background: yellow;
-}
+
 
