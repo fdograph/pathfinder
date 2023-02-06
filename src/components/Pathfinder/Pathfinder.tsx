@@ -15,8 +15,20 @@ import { Header } from '../Header/Header';
 export const Pathfinder: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const pathFinder = useResponsivePathFinder(containerRef);
-  const [root, setRoot] = useState<Node>();
-  const [target, setTarget] = useState<Node>();
+  const { walls, removeWall, addWall, clearWalls, isWall } = useWalls();
+  const {
+    path,
+    visited,
+    isSolved,
+    isRunning,
+    stop,
+    reset,
+    solve,
+    root,
+    target,
+    setRoot,
+    setTarget,
+  } = usePathFinderSolver(pathFinder, walls);
   const toggleType = useCallback(
     (node: Node) => {
       if (root === undefined && !(target && hasEqualCoords(node, target))) {
@@ -38,11 +50,15 @@ export const Pathfinder: React.FC = () => {
         setTarget(undefined);
       }
     },
-    [root, target]
+    [root, setRoot, setTarget, target]
   );
-  const { walls, removeWall, addWall, isWall } = useWalls();
-  const { path, visited, isSolved, isRunning, stop, reset, solve } =
-    usePathFinderSolver(pathFinder, root, target, walls);
+  const clearAll = useCallback(() => {
+    stop();
+    clearWalls();
+    setRoot(undefined);
+    setTarget(undefined);
+    reset();
+  }, [clearWalls, reset, setRoot, setTarget, stop]);
   const onEnterKey = useCallback(
     (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
@@ -73,31 +89,26 @@ export const Pathfinder: React.FC = () => {
     (event: React.PointerEvent<HTMLElement>) => {
       const evTarget = event.target as HTMLElement;
       const nodeKey = evTarget.dataset.nodeKey as NodeKey;
-      const node = getNodeCoords(evTarget.dataset.nodeKey as NodeKey);
-      const mode = isWall(nodeKey) ? 'delete' : 'add';
 
       if (!root || !target || isRunning) {
         return;
       }
 
-      reset();
-      setDrawingMode(mode);
+      reset().then(() => {
+        const mode = isWall(nodeKey) ? 'delete' : 'add';
+        setDrawingMode(mode);
 
-      if (mode === 'delete') {
-        removeWall(nodeKey);
-      } else {
-        addWall(nodeKey);
-      }
-      console.log('pointer down', { target, node });
+        if (mode === 'delete') {
+          removeWall(nodeKey);
+        } else {
+          addWall(nodeKey);
+        }
+      });
     },
     [addWall, isRunning, isWall, removeWall, reset, root, target]
   );
   const onPointerUp = useCallback((event: React.PointerEvent<HTMLElement>) => {
-    const target = event.target as HTMLElement;
-
     setDrawingMode(undefined);
-
-    console.log('pointer up', { target });
   }, []);
   const onPointerEnter = useCallback(
     (node: Node, event: React.PointerEvent<HTMLElement>) => {
@@ -118,8 +129,6 @@ export const Pathfinder: React.FC = () => {
       } else if (drawingMode === 'add') {
         addWall(nodeKey);
       }
-
-      console.log('pointer enter', { target, node });
     },
     [addWall, drawingMode, removeWall, root, target]
   );
@@ -134,7 +143,13 @@ export const Pathfinder: React.FC = () => {
 
   return (
     <div className={Styles.Pathfinder}>
-      <Header solve={solve} stop={stop} reset={reset} />
+      <Header
+        isRunning={isRunning}
+        solve={solve}
+        stop={stop}
+        reset={reset}
+        clear={clearAll}
+      />
       <div className={Styles.SceneContainer} ref={containerRef}>
         <Scene
           onPointerDown={onPointerDown}

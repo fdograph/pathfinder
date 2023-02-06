@@ -1,3 +1,37 @@
-.header {
-  @apply flex bg-neutral-800 p-4;
+.Header {
+  @apply flex items-center justify-between bg-neutral-800 p-4;
+}
+
+.FieldGroup {
+  @apply flex gap-4
+}
+
+.FormFieldContainer {
+  @apply flex flex-1 items-center justify-center;
+}
+
+.AlgoSelector {
+  @apply flex flex-1;
+}
+
+.AlgoSelector span {
+}
+
+.AlgoSelector select {
+}
+
+.Button {
+  @apply flex flex-1 p-2 bg-sky-500 leading-none rounded text-neutral-800;
+}
+
+.PositiveButton {
+  @apply bg-lime-400;
+}
+
+.NeutralButton {
+  @apply bg-sky-500;
+}
+
+.NegativeButton {
+  @apply bg-orange-500;
 }

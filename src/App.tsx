@@ -4,7 +4,7 @@ import { Pathfinder } from './components/Pathfinder/Pathfinder';
 
 export const App: React.FC = () => {
   return (
-    <div data-testid="app" className={Styles.app}>
+    <div data-testid="app" className={Styles.App}>
       <Pathfinder />
     </div>
   );

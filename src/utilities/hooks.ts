@@ -81,22 +81,39 @@ export const useWalls = () => {
     [walls]
   );
 
+  const clearWalls = useCallback(() => {
+    setWallsSet(new Set());
+  }, []);
+
   const isWall = useCallback((key: NodeKey) => wallsSet.has(key), [wallsSet]);
 
-  return { walls, addWall, removeWall, isWall };
+  return { walls, addWall, removeWall, clearWalls, isWall };
 };
 
 export const usePathFinderSolver = (
   pathFinder: PathFinderContextProps,
-  root?: Node,
-  target?: Node,
   walls?: NodeKey[]
 ) => {
   const [path, setPath] = useState<NodeKey[]>([]);
+  const [r, setRoot] = useState<Node>();
+  const [t, setTarget] = useState<Node>();
   const [visited, setVisited] = useState<NodeKey[]>([]);
   const [isSolved, setIsSolved] = useState<boolean>(false);
   const [isRunning, setIsRunning] = useState<boolean>(false);
+  const root = useMemo(() => {
+    if (r === undefined || pathFinder.isOutOfBounds(r)) {
+      return undefined;
+    }
 
+    return r;
+  }, [pathFinder, r]);
+  const target = useMemo(() => {
+    if (t === undefined || pathFinder.isOutOfBounds(t)) {
+      return undefined;
+    }
+
+    return t;
+  }, [pathFinder, t]);
   const stop = useCallback(() => {
     if (isRunning) {
       setHandBreak(true);
@@ -108,40 +125,31 @@ export const usePathFinderSolver = (
     setHandBreak(false);
     setIsSolved(false);
   }, []);
-  const reset = useCallback(() => {
+  const reset = useCallback(async () => {
+    stop();
+    await wait(0);
     setVisited([]);
     setUnsolved();
-  }, [setUnsolved]);
+  }, [setUnsolved, stop]);
   const solve = useCallback(async () => {
-    if (root === undefined || target === undefined) {
+    if (r === undefined || target === undefined) {
       console.log('root or target is undefined');
       return false;
     }
 
-    console.log('Solving, ', {
-      pathFinder,
-      reset,
-      root,
-      setUnsolved,
-      target,
-      walls,
-    });
     setIsRunning(true);
 
-    const solver = pathFinder.getSolver(root, target, walls ?? []);
+    const solver = pathFinder.getSolver(r, target, walls ?? []);
     const updatedVisited = new Set<NodeKey>();
     for await (const { node, path, found } of solver) {
       if (checkHandBreak()) {
         console.log('Hand Break activated, resetting');
-        reset();
+        await reset();
         break;
       }
 
-      await wait(0);
-
       updatedVisited.add(getNodeKey(node));
       setVisited([...updatedVisited]);
-
       setPath(path.map(getNodeKey));
 
       if (found) {
@@ -150,11 +158,13 @@ export const usePathFinderSolver = (
 
         return true;
       }
+
+      await wait(20);
     }
 
     setUnsolved();
     return false;
-  }, [pathFinder, reset, root, setUnsolved, target, walls]);
+  }, [pathFinder, reset, r, setUnsolved, target, walls]);
 
   return {
     path,
@@ -164,5 +174,9 @@ export const usePathFinderSolver = (
     stop,
     reset,
     solve,
+    root,
+    setRoot,
+    target,
+    setTarget,
   };
 };

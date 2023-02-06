@@ -103,7 +103,7 @@ export const aStarHeuristic: HeuristicFn = (
   for (const node of nodes) {
     const distance = getDistance(node, target);
     const pathLength = buildPathArray(node, family).length;
-    const nodeFactor = Math.log(distance * pathLength);
+    const nodeFactor = distance * pathLength;
 
     if (nodeFactor < leastFactor) {
       leastFactor = nodeFactor;
@@ -115,7 +115,7 @@ export const aStarHeuristic: HeuristicFn = (
 };
 
 export const dijkstraHeuristic: HeuristicFn = (nodes: Node[]): Node => {
-  return [...nodes].shift()!;
+  return nodes[0];
 };
 
 export type AlgoType = 'dijkstra' | 'astar';
@@ -202,7 +202,7 @@ export const getPathFinderSolver = (
   target: Node,
   grid: GraphGrid,
   walls: NodeKey[]
-) => Generator<{ node: Node; path: Node[]; found: boolean }, void>) => {
+) => Generator<PathFinderSolverRound, void>) => {
   switch (type) {
     case 'astar':
       return aStarSearch;

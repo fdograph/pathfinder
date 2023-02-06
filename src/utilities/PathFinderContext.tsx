@@ -32,6 +32,8 @@ export interface PathFinderContextProps {
     },
     void
   >;
+
+  isOutOfBounds: (n: Node) => boolean;
 }
 
 export const PathFinderContext = React.createContext<PathFinderContextProps>({
@@ -41,6 +43,7 @@ export const PathFinderContext = React.createContext<PathFinderContextProps>({
   size: { cols: 0, rows: 0 },
   setGraphSize: notImplemented,
   getSolver: notImplemented,
+  isOutOfBounds: notImplemented,
 });
 
 export const PathFinderContextProvider: React.FC<React.PropsWithChildren> = ({
@@ -61,6 +64,18 @@ export const PathFinderContextProvider: React.FC<React.PropsWithChildren> = ({
     },
     [graph, selectedAlgo]
   );
+  const isOutOfBounds = useCallback(
+    (n: Node) => {
+      if (n.row < 0 || n.row > size.rows - 1) {
+        return true;
+      } else if (n.col < 0 || n.col > size.cols - 1) {
+        return true;
+      }
+
+      return false;
+    },
+    [size.cols, size.rows]
+  );
 
   const initialValue: PathFinderContextProps = {
     selectedAlgo,
@@ -69,6 +84,7 @@ export const PathFinderContextProvider: React.FC<React.PropsWithChildren> = ({
     setGraphSize,
     getSolver,
     size,
+    isOutOfBounds,
   };
 
   return (
