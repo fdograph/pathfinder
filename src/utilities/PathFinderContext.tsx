@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useState } from 'react';
 import {
   AlgoType,
   buildGraphGrid,
@@ -36,7 +36,7 @@ export interface PathFinderContextProps {
   isOutOfBounds: (n: Node) => boolean;
 }
 
-export const PathFinderContext = React.createContext<PathFinderContextProps>({
+export const PathFinderContext = createContext<PathFinderContextProps>({
   selectedAlgo: 'dijkstra',
   setSelectedAlgo: notImplemented,
   graph: [],
