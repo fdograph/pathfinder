@@ -10,7 +10,7 @@ import {
 import classNames from 'classnames';
 
 export interface SceneProps {
-  onPointerDown: (event: React.PointerEvent<HTMLElement>) => void;
+  onPointerDown: (node: Node, event: React.PointerEvent<HTMLElement>) => void;
   onPointerUp: (event: React.PointerEvent<HTMLElement>) => void;
   onPointerEnter: (node: Node, event: React.PointerEvent<HTMLElement>) => void;
   onClick: (node: Node) => void;
@@ -41,6 +41,7 @@ export const Scene: React.FC<SceneProps> = ({
       <div
         key={getNodeKey(node)}
         onClick={() => onClick(node)}
+        onPointerDown={event => onPointerDown(node, event)}
         onPointerEnter={event => onPointerEnter(node, event)}
         className={classNames(Styles.Block, {
           [Styles.Visited]: visited.indexOf(getNodeKey(node)) > -1,
@@ -56,7 +57,6 @@ export const Scene: React.FC<SceneProps> = ({
 
   return (
     <div
-      onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
       className={Styles.Scene}
       style={{

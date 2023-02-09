@@ -3,19 +3,17 @@ import Styles from './Pathfinder.module.css';
 import { Scene } from '../Scene/Scene';
 import { useResponsivePathFinder } from '../../utilities/PathFinderContext';
 import {
-  getNodeCoords,
   getNodeKey,
   hasEqualCoords,
   Node,
   NodeKey,
 } from '../../dataStructures/pathFinder';
-import { usePathFinderSolver, useWalls } from '../../utilities/hooks';
+import { usePathFinderSolver } from '../../utilities/hooks';
 import { Header } from '../Header/Header';
 
 export const Pathfinder: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const pathFinder = useResponsivePathFinder(containerRef);
-  const { walls, removeWall, addWall, clearWalls, isWall } = useWalls();
   const {
     path,
     visited,
@@ -28,7 +26,14 @@ export const Pathfinder: React.FC = () => {
     target,
     setRoot,
     setTarget,
-  } = usePathFinderSolver(pathFinder, walls);
+    walls,
+    removeWall,
+    addWall,
+    clearWalls,
+    isWall,
+  } = usePathFinderSolver(pathFinder);
+  const [drawingMode, setDrawingMode] = useState<string | undefined>();
+
   const toggleType = useCallback(
     (node: Node) => {
       if (root === undefined && !(target && hasEqualCoords(node, target))) {
@@ -84,13 +89,19 @@ export const Pathfinder: React.FC = () => {
     },
     [toggleType]
   );
-  const [drawingMode, setDrawingMode] = useState<string | undefined>();
+
   const onPointerDown = useCallback(
-    (event: React.PointerEvent<HTMLElement>) => {
+    (node: Node, event: React.PointerEvent<HTMLElement>) => {
       const evTarget = event.target as HTMLElement;
       const nodeKey = evTarget.dataset.nodeKey as NodeKey;
 
-      if (!root || !target || isRunning) {
+      if (
+        !root ||
+        !target ||
+        (root && hasEqualCoords(node, root)) ||
+        (target && hasEqualCoords(node, target)) ||
+        isRunning
+      ) {
         return;
       }
 

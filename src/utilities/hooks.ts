@@ -90,10 +90,8 @@ export const useWalls = () => {
   return { walls, addWall, removeWall, clearWalls, isWall };
 };
 
-export const usePathFinderSolver = (
-  pathFinder: PathFinderContextProps,
-  walls?: NodeKey[]
-) => {
+export const usePathFinderSolver = (pathFinder: PathFinderContextProps) => {
+  const { walls, removeWall, addWall, clearWalls, isWall } = useWalls();
   const [path, setPath] = useState<NodeKey[]>([]);
   const [r, setRoot] = useState<Node>();
   const [t, setTarget] = useState<Node>();
@@ -178,5 +176,10 @@ export const usePathFinderSolver = (
     setRoot,
     target,
     setTarget,
+    walls,
+    removeWall,
+    addWall,
+    clearWalls,
+    isWall,
   };
 };

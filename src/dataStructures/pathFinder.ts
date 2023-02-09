@@ -77,11 +77,18 @@ export const buildPathArray = (
   return list;
 };
 
-const getDistance = (a: Node, b: Node): number => {
+const getRadialDistance = (a: Node, b: Node): number => {
   const yDiff = Math.abs(a.row - b.row);
   const xDiff = Math.abs(a.col - b.col);
 
   return Math.sqrt(Math.pow(yDiff, 2) + Math.pow(xDiff, 2));
+};
+
+const getManhattanDistance = (a: Node, b: Node): number => {
+  const yDiff = Math.abs(a.row - b.row);
+  const xDiff = Math.abs(a.col - b.col);
+
+  return xDiff + yDiff;
 };
 
 export type HeuristicFn = (
@@ -101,9 +108,9 @@ export const aStarHeuristic: HeuristicFn = (
   let chosen = nodes[0];
 
   for (const node of nodes) {
-    const distance = getDistance(node, target);
+    const distance = getManhattanDistance(node, target);
     const pathLength = buildPathArray(node, family).length;
-    const nodeFactor = distance * pathLength;
+    const nodeFactor = distance * Math.sqrt(pathLength);
 
     if (nodeFactor < leastFactor) {
       leastFactor = nodeFactor;
