@@ -1,6 +1,0 @@
-{
-  "extends": ["stylelint-config-standard", "stylelint-config-prettier", "stylelint-config-tailwindcss"],
-  "rules": {
-    "selector-class-pattern": "^[A-Z][a-zA-Z0-9]+$"
-  }
-}
