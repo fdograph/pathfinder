@@ -19,6 +19,7 @@ jobs:
       - run: npm test
         env:
           CI: true
+          VITE_BASE_PATH: '/pathfinder/'
 
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main'
